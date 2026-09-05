@@ -1,0 +1,6 @@
+{
+  "name": "ElectraManager",
+  "description": "Modern Product & Inventory Management System for electronics retail with real-time stock tracking, sales logs, and analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
