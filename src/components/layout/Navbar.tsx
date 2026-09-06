@@ -340,7 +340,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {user?.name || 'Store User'}
               </span>
               <span className="text-[10px] text-slate-500 dark:text-slate-400 capitalize block leading-tight">
-                {user?.role === 'admin' ? 'Admin' : 'User'}
+                {user?.role === 'admin' ? 'Owner (Admin)' : 'Employee (User)'}
               </span>
             </div>
             <ChevronDown className="w-3 h-3 text-slate-400 hidden sm:block" />
@@ -374,7 +374,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
                 >
-                  <span>User</span>
+                  <span>Employee (User)</span>
                   {user?.role === 'user' && <Check className="w-3 h-3" />}
                 </button>
 
@@ -393,7 +393,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
                 >
-                  <span>Admin</span>
+                  <span>Owner (Admin)</span>
                   {user?.role === 'admin' ? (
                     <Check className="w-3 h-3 text-violet-600 dark:text-violet-400" />
                   ) : (

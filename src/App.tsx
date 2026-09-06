@@ -172,7 +172,11 @@ const MainAppContent: React.FC = () => {
         />
 
         {/* Bottom Mobile Tab Bar */}
-        <MobileNav currentTab={currentTab} onNavigate={handleNavigate} />
+        <MobileNav
+          currentTab={currentTab}
+          onNavigate={handleNavigate}
+          onSelectTab={handleNavigate}
+        />
       </div>
     </div>
   );

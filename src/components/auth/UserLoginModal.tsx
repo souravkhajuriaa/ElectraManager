@@ -105,22 +105,22 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
     <Modal
       isOpen={isOpen}
       onClose={handleResetAndClose}
-      title="New User Registration"
-      subtitle="Register your retail electronics store to start billing, inventory tracking, and GST reporting."
+      title="New User (Employee) Registration"
+      subtitle="Register a new employee / staff member to manage billing, inventory, and sales transactions."
       maxWidth="md"
     >
       <div className="space-y-4 pt-1">
         {/* Onboarding Highlights Banner */}
         <div className="flex items-start gap-3 p-3 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60">
           <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-            <Sparkles className="w-4 h-4" />
+            <UserPlus className="w-4 h-4" />
           </div>
           <div>
             <h4 className="text-xs font-bold text-blue-900 dark:text-blue-200">
-              Welcome to Electra Retail Network
+              Employee / User Account Creation
             </h4>
             <p className="text-[11px] text-blue-700 dark:text-blue-300 leading-snug mt-0.5">
-              Set up your store in under a minute. Includes POS billing, barcode scanner, GST tax calculations, and IMEI/serial tracking.
+              Create an account for staff and employees. Grants access to POS billing, inventory stock management, barcode scanner, and sales recording.
             </p>
           </div>
         </div>
@@ -144,14 +144,14 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
           {/* Full Name */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Name <span className="text-rose-500">*</span>
+              Employee Name <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
               required
               value={name}
               onChange={e => setName(e.target.value)}
-              placeholder="e.g. Rahul Sharma"
+              placeholder="Enter full name"
               className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
             />
           </div>
@@ -163,7 +163,7 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
             </label>
             <div className="flex rounded-lg overflow-hidden border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus-within:border-blue-500">
               <span className="px-2.5 py-2 bg-slate-100 dark:bg-slate-700/80 text-slate-600 dark:text-slate-300 text-xs font-medium border-r border-slate-300 dark:border-slate-700 flex items-center gap-1 shrink-0 select-none">
-                IND +91
+                +91
               </span>
               <input
                 type="tel"
@@ -171,12 +171,12 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
                 maxLength={10}
                 value={mobile}
                 onChange={e => setMobile(e.target.value.replace(/\D/g, ''))}
-                placeholder="98765 43210"
+                placeholder="Enter 10-digit mobile number"
                 className="w-full px-3 py-2 bg-transparent text-slate-900 dark:text-white text-xs font-mono focus:outline-none placeholder:text-slate-400"
               />
             </div>
             <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
-              Used for account verification and receiving daily sales summaries
+              Used for employee login and verification
             </p>
           </div>
 
@@ -192,7 +192,7 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
                 required
                 value={storeName}
                 onChange={e => setStoreName(e.target.value)}
-                placeholder="e.g. Sharma Electronics & Mobile Hub"
+                placeholder="Enter store name"
                 className="w-full pl-8 pr-3 py-2 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
               />
             </div>
@@ -274,7 +274,7 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
               ) : (
                 <>
                   <UserPlus className="w-3.5 h-3.5" />
-                  <span>Register & Create Store</span>
+                  <span>Register New User (Employee)</span>
                 </>
               )}
             </button>

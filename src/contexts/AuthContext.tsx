@@ -11,13 +11,13 @@ interface AuthContextType {
   pendingMobile: string;
   resendSeconds: number;
   usersList: UserProfile[];
-  loginAsUser: (selectedUser: UserProfile) => void;
+  loginAsUser: (selectedUser: UserProfile, rememberMe?: boolean) => void;
   sendOTP: (mobile: string) => Promise<{ success: boolean; message?: string }>;
-  verifyOTP: (otp: string, name?: string) => Promise<{ success: boolean; message?: string }>;
+  verifyOTP: (otp: string, name?: string, rememberMe?: boolean) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   switchRole: (role: UserRole) => void;
   updateProfile: (details: Partial<UserProfile>) => void;
-  demoLogin: (role?: UserRole) => void;
+  demoLogin: (role?: UserRole, rememberMe?: boolean) => void;
   resetAuthFlow: () => void;
   isUserLoginModalOpen: boolean;
   openUserLoginModal: () => void;
@@ -64,25 +64,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [user, setUser] = useState<UserProfile | null>(() => {
     if (typeof window !== 'undefined') {
-      // If user explicitly logged out, keep them logged out until they log in again
-      const isLoggedOut = localStorage.getItem('electra_logged_out') === 'true';
-      if (isLoggedOut) {
-        return null;
-      }
-      const saved = localStorage.getItem('electra_user');
-      if (saved) {
+      // 1. Session storage keeps the user logged in across page reloads in the active tab
+      const sessionSaved = sessionStorage.getItem('electra_session_user');
+      if (sessionSaved) {
         try {
-          const parsed = JSON.parse(saved);
+          const parsed = JSON.parse(sessionSaved);
           if (parsed && typeof parsed.name === 'string' && /vikram\s*mehta/i.test(parsed.name)) {
             parsed.name = 'Sourav';
           }
-          return parsed;
-        } catch {
-          return SAMPLE_USER;
+          if (parsed?.id) return parsed;
+        } catch { /* ignore */ }
+      }
+
+      // 2. Persistent storage only if the user explicitly opted to "Remember Login" on this device
+      const rememberMe = localStorage.getItem('electra_remember_me') === 'true';
+      const isLoggedOut = localStorage.getItem('electra_logged_out') === 'true';
+      if (rememberMe && !isLoggedOut) {
+        const localSaved = localStorage.getItem('electra_user');
+        if (localSaved) {
+          try {
+            const parsed = JSON.parse(localSaved);
+            if (parsed && typeof parsed.name === 'string' && /vikram\s*mehta/i.test(parsed.name)) {
+              parsed.name = 'Sourav';
+            }
+            if (parsed?.id) return parsed;
+          } catch { /* ignore */ }
         }
       }
     }
-    return SAMPLE_USER; // Default logged in for smooth instant AI Studio preview!
+    // Default to NULL: Always show Login Page first upon opening ElectraManager!
+    return null;
   });
 
   const [otpSent, setOtpSent] = useState(false);
@@ -105,10 +116,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setPendingAdminRedirectTab(null);
   };
 
-  const loginAsUser = (selectedUser: UserProfile) => {
+  const loginAsUser = (selectedUser: UserProfile, rememberMe = false) => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('electra_logged_out');
-      localStorage.setItem('electra_user', JSON.stringify(selectedUser));
+      sessionStorage.setItem('electra_session_user', JSON.stringify(selectedUser));
+      if (rememberMe) {
+        localStorage.setItem('electra_remember_me', 'true');
+        localStorage.setItem('electra_user', JSON.stringify(selectedUser));
+      } else {
+        localStorage.removeItem('electra_remember_me');
+        localStorage.removeItem('electra_user');
+      }
+      localStorage.setItem('electra_last_user', JSON.stringify(selectedUser));
       localStorage.setItem('electra_active_user_id', selectedUser.id);
     }
     setUser(selectedUser);
@@ -186,13 +205,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       businessName: adminData.businessName?.trim() || 'Electra Retail HQ',
     };
 
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('electra_logged_out');
-      localStorage.setItem('electra_user', JSON.stringify(newAdminProfile));
-      localStorage.setItem('electra_active_user_id', newAdminProfile.id);
-    }
-    setUser(newAdminProfile);
     setIsAdminLoginModalOpen(false);
+    loginAsUser(newAdminProfile);
     return { success: true };
   };
 
@@ -223,24 +237,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       businessName,
     };
 
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('electra_logged_out');
-      localStorage.setItem('electra_user', JSON.stringify(newUserProfile));
-      localStorage.setItem('electra_active_user_id', newUserProfile.id);
-    }
-
-    setUsersList(prev => {
-      const updated = [newUserProfile, ...prev.filter(u => u.id !== newUserId && u.mobile !== formattedMobile)];
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('electra_users_list', JSON.stringify(updated));
-      }
-      return updated;
-    });
-
-    setUser(newUserProfile);
     setIsUserLoginModalOpen(false);
-    setOtpSent(false);
-    setPendingMobile('');
+    loginAsUser(newUserProfile);
     return { success: true };
   };
 
@@ -281,13 +279,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           email: matchedAdmin.email,
           businessName: matchedAdmin.businessName || 'Electra Retail HQ',
         };
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('electra_logged_out');
-          localStorage.setItem('electra_user', JSON.stringify(adminProfile));
-          localStorage.setItem('electra_active_user_id', adminProfile.id);
-        }
-        setUser(adminProfile);
         setIsAdminLoginModalOpen(false);
+        loginAsUser(adminProfile);
         return { success: true };
       }
     }
@@ -303,13 +296,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: matchedByPasscode.email,
         businessName: matchedByPasscode.businessName || 'Electra Retail HQ',
       };
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('electra_logged_out');
-        localStorage.setItem('electra_user', JSON.stringify(adminProfile));
-        localStorage.setItem('electra_active_user_id', adminProfile.id);
-      }
-      setUser(adminProfile);
       setIsAdminLoginModalOpen(false);
+      loginAsUser(adminProfile);
       return { success: true };
     }
 
@@ -325,13 +313,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: 'admin@electramanager.com',
         businessName: 'ElectraManager System HQ',
       };
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('electra_logged_out');
-        localStorage.setItem('electra_user', JSON.stringify(adminProfile));
-        localStorage.setItem('electra_active_user_id', adminProfile.id);
-      }
-      setUser(adminProfile);
       setIsAdminLoginModalOpen(false);
+      loginAsUser(adminProfile);
       return { success: true };
     }
 
@@ -347,13 +330,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [user]);
 
-  // Keep localStorage in sync with user state
+  // Keep active session and persistent storage in sync
   useEffect(() => {
     if (user) {
       localStorage.removeItem('electra_logged_out');
-      localStorage.setItem('electra_user', JSON.stringify(user));
+      sessionStorage.setItem('electra_session_user', JSON.stringify(user));
       localStorage.setItem('electra_active_user_id', user.id);
+      if (localStorage.getItem('electra_remember_me') === 'true') {
+        localStorage.setItem('electra_user', JSON.stringify(user));
+      }
     } else {
+      sessionStorage.removeItem('electra_session_user');
       localStorage.removeItem('electra_user');
       localStorage.removeItem('electra_active_user_id');
     }
@@ -386,7 +373,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { success: true };
   };
 
-  const verifyOTP = async (otp: string, name?: string): Promise<{ success: boolean; message?: string }> => {
+  const verifyOTP = async (otp: string, name?: string, rememberMe = false): Promise<{ success: boolean; message?: string }> => {
     // In demo/test mode: accept 123456 or any 6-digit number
     if (!otp || otp.trim().length !== 6) {
       return { success: false, message: 'Please enter the 6-digit OTP' };
@@ -404,15 +391,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       businessName: existing?.businessName || (name ? `${name}'s Electronics Hub` : 'Electra Retail & Tech Hub'),
     };
 
-    loginAsUser(newUser);
+    loginAsUser(newUser, rememberMe);
     return { success: true };
   };
 
   const logout = () => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('electra_logged_out', 'true');
+      localStorage.removeItem('electra_remember_me');
       localStorage.removeItem('electra_user');
       localStorage.removeItem('electra_active_user_id');
+      sessionStorage.removeItem('electra_session_user');
     }
     setUser(null);
     setOtpSent(false);
@@ -449,8 +438,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loginAsUser(updated);
   };
 
-  const demoLogin = (role: UserRole = 'user') => {
-    loginAsUser(role === 'admin' ? SAMPLE_ADMIN : SAMPLE_USER);
+  const demoLogin = (role: UserRole = 'user', rememberMe = false) => {
+    loginAsUser(role === 'admin' ? SAMPLE_ADMIN : SAMPLE_USER, rememberMe);
   };
 
   const resetAuthFlow = () => {
