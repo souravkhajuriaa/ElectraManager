@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   ShieldCheck,
   ArrowRight,
-  Smartphone,
+  Zap,
   KeyRound,
   UserPlus,
   Lock,
@@ -66,8 +66,8 @@ export const AuthView: React.FC = () => {
       <div className="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative z-10 backdrop-blur-xl">
         {/* Brand Header */}
         <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white mx-auto mb-3 shadow-lg shadow-blue-500/25">
-            <Smartphone className="w-6 h-6" />
+          <div id="auth-brand-logo-icon" className="w-13 h-13 rounded-2xl bg-[#4F46E5] flex items-center justify-center text-white mx-auto mb-3 shadow-lg shadow-indigo-500/35 ring-1 ring-white/10">
+            <Zap className="w-7 h-7 text-white fill-white" />
           </div>
           <h2 className="text-2xl font-bold font-display text-white tracking-tight">
             Electra<span className="text-blue-500">Manager</span>

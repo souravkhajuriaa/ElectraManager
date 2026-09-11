@@ -118,8 +118,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="h-13 flex items-center justify-between px-3.5 border-b border-slate-200 dark:border-slate-800 shrink-0">
         {!isCollapsed ? (
           <div className="flex items-center gap-2 overflow-hidden">
-            <div className="w-7 h-7 rounded-md bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-xs">
-              <Zap className="w-4 h-4" />
+            <div className="w-7 h-7 rounded-lg bg-[#4F46E5] flex items-center justify-center text-white shrink-0 shadow-xs">
+              <Zap className="w-4 h-4 fill-white" />
             </div>
             <div className="min-w-0">
               <span className="font-display font-bold text-sm tracking-tight text-slate-900 dark:text-white truncate block leading-tight">
@@ -131,8 +131,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           </div>
         ) : (
-          <div className="mx-auto w-7 h-7 rounded-md bg-blue-600 flex items-center justify-center text-white shadow-xs">
-            <Zap className="w-4 h-4" />
+          <div className="mx-auto w-7 h-7 rounded-lg bg-[#4F46E5] flex items-center justify-center text-white shadow-xs">
+            <Zap className="w-4 h-4 fill-white" />
           </div>
         )}
 
