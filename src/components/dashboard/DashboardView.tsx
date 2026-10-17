@@ -9,7 +9,6 @@ import {
   ShoppingCart,
   IndianRupee,
   ArrowUpRight,
-  Plus,
   ArrowRight,
   Sparkles,
 } from 'lucide-react';
@@ -57,11 +56,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     totalEstimatedProfit,
     activityLogs,
   } = useData();
-
-  const handleAddProduct = () => {
-    if (onOpenAddProduct) onOpenAddProduct();
-    else onNavigate('products');
-  };
 
   // 1. Prepare Sales & Profit Trend chart data (past 7 dates)
   const salesByDate: Record<string, { date: string; revenue: number; profit: number }> = {};
@@ -137,17 +131,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <p className="text-[11px] text-slate-400 mt-0.5 max-w-xl leading-tight">
             Real-time valuation, sales velocity, and low-inventory reorder alerts.
           </p>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            id="btn-dash-add-product"
-            onClick={handleAddProduct}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition-all active:scale-98"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Add Product</span>
-          </button>
         </div>
       </div>
 
