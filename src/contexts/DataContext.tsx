@@ -14,6 +14,17 @@ import {
   saveCustomProductImage,
   saveMasterProducts,
 } from '@/src/lib/utils/imageStorage';
+import {
+  getFirestoreProducts,
+  saveProductToFirestore,
+  deleteProductFromFirestore,
+  seedProductsIfEmpty,
+  subscribeToProducts,
+  saveSaleToFirestore,
+  saveCategoryToFirestore,
+  deleteCategoryFromFirestore,
+  saveBusinessToFirestore,
+} from '@/src/lib/services/firestoreService';
 import { useAuth } from './AuthContext';
 
 interface DataContextType {
@@ -60,6 +71,10 @@ interface DataContextType {
   outOfStockCount: number;
   totalSalesAmount: number;
   totalEstimatedProfit: number;
+  // Cloud Database Sync
+  isCloudSynced: boolean;
+  cloudSyncStatus: 'synced' | 'syncing' | 'idle' | 'offline';
+  syncWithCloud: () => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -154,6 +169,66 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     return loadUserData('business', activeUid, defaultBiz);
   });
+
+  // Cloud Database synchronization states
+  const [isCloudSynced, setIsCloudSynced] = useState<boolean>(false);
+  const [cloudSyncStatus, setCloudSyncStatus] = useState<'synced' | 'syncing' | 'idle' | 'offline'>('idle');
+
+  // Cloud synchronization with Google Firestore on boot and real-time subscription
+  useEffect(() => {
+    let isMounted = true;
+    setCloudSyncStatus('syncing');
+
+    // 1. Initial seed & fetch from Firestore
+    const masterSeed = getMasterProducts(SAMPLE_PRODUCTS);
+    seedProductsIfEmpty(masterSeed)
+      .then((cloudProducts) => {
+        if (!isMounted) return;
+        if (cloudProducts && cloudProducts.length > 0) {
+          setProducts(cloudProducts);
+          saveMasterProducts(cloudProducts);
+        }
+        setIsCloudSynced(true);
+        setCloudSyncStatus('synced');
+      })
+      .catch((err) => {
+        console.warn('[DataContext] Initial Firestore sync notice:', err);
+        if (isMounted) setCloudSyncStatus('offline');
+      });
+
+    // 2. Real-time listener for Firestore collection changes
+    const unsubscribe = subscribeToProducts((cloudProducts) => {
+      if (!isMounted) return;
+      if (cloudProducts && cloudProducts.length > 0) {
+        setProducts(cloudProducts);
+        saveMasterProducts(cloudProducts);
+        setIsCloudSynced(true);
+        setCloudSyncStatus('synced');
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, []);
+
+  const syncWithCloud = async () => {
+    setCloudSyncStatus('syncing');
+    try {
+      const cloudProducts = await getFirestoreProducts();
+      if (cloudProducts.length > 0) {
+        setProducts(cloudProducts);
+        saveMasterProducts(cloudProducts);
+      } else {
+        await seedProductsIfEmpty(products);
+      }
+      setIsCloudSynced(true);
+      setCloudSyncStatus('synced');
+    } catch {
+      setCloudSyncStatus('offline');
+    }
+  };
 
   // Track the currently active user to re-hydrate state when switching users
   const lastActiveUserIdRef = React.useRef<string>(activeUid);
@@ -300,6 +375,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       saveMasterProducts(next);
       return next;
     });
+
+    // Permanent Firestore Cloud persistence
+    setCloudSyncStatus('syncing');
+    saveProductToFirestore(newProduct)
+      .then(() => setCloudSyncStatus('synced'))
+      .catch((err) => {
+        console.warn('[DataContext] Firestore addProduct warning:', err);
+        setCloudSyncStatus('offline');
+      });
+
     logActivity('PRODUCT_CREATE', 'product', `Added product "${newProduct.name}" (SKU: ${newProduct.sku})`, newProduct.id);
 
     // If initial stock is low or zero, trigger notification
@@ -308,7 +393,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return newProduct;
   };
 
-  // Update Product
+  // Update Product (Title, Image, Pricing, Stock, Category)
   const updateProduct = (id: string, updates: Partial<Product>) => {
     const target = products.find(p => p.id === id);
     if (!target) return;
@@ -330,6 +415,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return next;
     });
 
+    // Permanent Firestore Cloud persistence for title, image, and details
+    setCloudSyncStatus('syncing');
+    saveProductToFirestore(updated)
+      .then(() => setCloudSyncStatus('synced'))
+      .catch((err) => {
+        console.warn('[DataContext] Firestore updateProduct warning:', err);
+        setCloudSyncStatus('offline');
+      });
+
     if (updates.stockQuantity !== undefined && updates.stockQuantity !== target.stockQuantity) {
       checkStockNotification(updated, updates.stockQuantity);
     }
@@ -344,6 +438,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       saveMasterProducts(next);
       return next;
     });
+
+    // Permanent delete in Firestore
+    deleteProductFromFirestore(id).catch((err) =>
+      console.warn('[DataContext] Firestore deleteProduct warning:', err)
+    );
+
     if (target) {
       logActivity('PRODUCT_DELETE', 'product', `Deleted product "${target.name}"`, id);
     }
@@ -368,6 +468,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     setProducts(prev => prev.map(p => (p.id === productId ? updated : p)));
+
+    // Permanent Firestore Cloud persistence
+    saveProductToFirestore(updated).catch((err) =>
+      console.warn('[DataContext] Firestore updateStock warning:', err)
+    );
 
     checkStockNotification(updated, newQty);
     const reasonText = reason ? ` (Reason: ${reason})` : '';
@@ -426,6 +531,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       prev.map(p => (p.id === product.id ? { ...p, stockQuantity: newStock, updatedAt: new Date().toISOString() } : p))
     );
 
+    // Permanent Firestore persistence for sale transaction and product stock
+    saveSaleToFirestore(newSale).catch(err => console.warn('[DataContext] Firestore saveSale error:', err));
+    if (product) {
+      saveProductToFirestore({
+        ...product,
+        stockQuantity: newStock,
+        updatedAt: new Date().toISOString(),
+      }).catch(err => console.warn('[DataContext] Firestore product stock update error:', err));
+    }
+
     // Check notifications
     checkStockNotification(product, newStock);
 
@@ -463,13 +578,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       businessId: business.id,
     };
     setCategories(prev => [...prev.filter(c => c.id !== newCat.id), newCat]);
+    saveCategoryToFirestore(newCat).catch(err => console.warn('[DataContext] Firestore addCategory error:', err));
     logActivity('CATEGORY_CREATE', 'category', `Created item category "${newCat.name}"`, newCat.id);
     return newCat;
   };
 
   // Update Category
   const updateCategory = (id: string, updates: Partial<Category>) => {
+    const target = categories.find(c => c.id === id);
+    const updated = target ? { ...target, ...updates } : { id, ...updates } as Category;
     setCategories(prev => prev.map(c => (c.id === id ? { ...c, ...updates } : c)));
+    saveCategoryToFirestore(updated).catch(err => console.warn('[DataContext] Firestore updateCategory error:', err));
     logActivity('CATEGORY_UPDATE', 'category', `Updated category`, id);
   };
 
@@ -484,6 +603,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     const cat = categories.find(c => c.id === id);
     setCategories(prev => prev.filter(c => c.id !== id));
+    deleteCategoryFromFirestore(id).catch(err => console.warn('[DataContext] Firestore deleteCategory error:', err));
     if (cat) {
       logActivity('CATEGORY_DELETE', 'category', `Deleted category "${cat.name}"`, id);
     }
@@ -505,7 +625,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Business
   const updateBusiness = (updates: Partial<Business>) => {
-    setBusiness(prev => ({ ...prev, ...updates }));
+    const updated = { ...business, ...updates };
+    setBusiness(updated);
+    saveBusinessToFirestore(updated).catch(err => console.warn('[DataContext] Firestore updateBusiness error:', err));
     logActivity('SETTINGS_UPDATE', 'settings', 'Updated business profile and store settings');
   };
 
@@ -587,6 +709,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         outOfStockCount,
         totalSalesAmount,
         totalEstimatedProfit,
+        isCloudSynced,
+        cloudSyncStatus,
+        syncWithCloud,
       }}
     >
       {children}

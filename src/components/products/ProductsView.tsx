@@ -21,8 +21,10 @@ import {
   X,
   CheckCircle2,
   AlertCircle,
+  Bot,
 } from 'lucide-react';
 import { useData } from '@/src/contexts/DataContext';
+import { useAIChat } from '@/src/contexts/ChatContext';
 import { Product, StockStatus, NavigationTab } from '@/src/types';
 import { StockBadge } from '@/src/components/ui/Badge';
 import { Modal } from '@/src/components/ui/Modal';
@@ -49,6 +51,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
     setSelectedCategoryId,
     updateStock,
   } = useData();
+  const { openChatWithPrompt } = useAIChat();
 
   // Filters & layout
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -301,6 +304,17 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
               <List className="w-3.5 h-3.5" />
             </button>
           </div>
+
+          {/* AI Specs Search */}
+          <button
+            type="button"
+            onClick={() => openChatWithPrompt('Show me the item specifications, model numbers, selling prices, and stock counts of our electronics.')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 text-xs font-semibold shadow-2xs transition-all active:scale-98 shrink-0"
+            title="Ask AI for product specifications and stock details"
+          >
+            <Bot className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+            <span className="hidden sm:inline">AI Specs Finder</span>
+          </button>
 
           {/* Add Product Button */}
           <button

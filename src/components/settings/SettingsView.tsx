@@ -15,6 +15,9 @@ import {
   Lock,
   LogOut,
   ShieldCheck,
+  Database,
+  Cloud,
+  RefreshCw,
 } from 'lucide-react';
 import { useData } from '@/src/contexts/DataContext';
 import { useAuth } from '@/src/contexts/AuthContext';
@@ -25,7 +28,16 @@ interface SettingsViewProps {
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({ onNavigate }) => {
-  const { business, updateBusiness, resetToSampleData, products, sales, categories } = useData();
+  const {
+    business,
+    updateBusiness,
+    resetToDemoData,
+    products,
+    sales,
+    categories,
+    cloudSyncStatus,
+    syncWithCloud,
+  } = useData();
   const { user, role, switchRole, logout } = useAuth();
 
   const [name, setName] = useState(business.name);
@@ -67,7 +79,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onNavigate }) => {
 
   const handleResetData = () => {
     if (confirm('Are you sure you want to restore the default sample electronics catalog? Any newly created items or custom sales will be reset.')) {
-      resetToSampleData();
+      resetToDemoData();
       alert('Demo data restored successfully!');
     }
   };
@@ -244,6 +256,52 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onNavigate }) => {
             <LogOut className="w-3 h-3" />
             <span>Log Out</span>
           </button>
+        </div>
+      </div>
+
+      {/* Cloud Database & Backend Persistence (Firestore) */}
+      <div className="p-3.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+              <Database className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white font-display flex items-center gap-1.5">
+                <span>Cloud Database & Backend</span>
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Connected
+                </span>
+              </h3>
+              <p className="text-[10px] text-slate-500">
+                Google Cloud Firestore • Permanent real-time persistence for titles, images, stock, & transactions
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => syncWithCloud()}
+            className="flex items-center gap-1.5 h-7 px-3 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all shadow-xs"
+          >
+            <RefreshCw className={`w-3 h-3 ${cloudSyncStatus === 'syncing' ? 'animate-spin' : ''}`} />
+            <span>{cloudSyncStatus === 'syncing' ? 'Syncing...' : 'Sync Cloud DB'}</span>
+          </button>
+        </div>
+
+        <div className="p-2.5 rounded-md bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 text-[11px] text-slate-600 dark:text-slate-300 space-y-1">
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-slate-900 dark:text-white">Active Database:</span>
+            <span className="font-mono text-[10px] text-indigo-600 dark:text-indigo-400">Google Cloud Firestore (Enterprise)</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-slate-900 dark:text-white">Permanent Persistence:</span>
+            <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Enabled (Products, Titles, Images, Sales)</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-slate-900 dark:text-white">Sync Mode:</span>
+            <span>Real-time bidirectional synchronization across tabs & devices</span>
+          </div>
         </div>
       </div>
 

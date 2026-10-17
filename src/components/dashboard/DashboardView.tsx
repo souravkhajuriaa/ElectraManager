@@ -58,11 +58,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     activityLogs,
   } = useData();
 
-  const handleRecordSale = () => {
-    if (onOpenRecordSale) onOpenRecordSale();
-    else onNavigate('sales');
-  };
-
   const handleAddProduct = () => {
     if (onOpenAddProduct) onOpenAddProduct();
     else onNavigate('products');
@@ -146,14 +141,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
         <div className="flex items-center gap-2 shrink-0">
           <button
-            id="btn-dash-record-sale"
-            onClick={handleRecordSale}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-xs transition-all active:scale-98"
-          >
-            <ShoppingCart className="w-3.5 h-3.5" />
-            <span>Record Sale</span>
-          </button>
-          <button
             id="btn-dash-add-product"
             onClick={handleAddProduct}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition-all active:scale-98"
@@ -183,7 +170,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
           <button
             onClick={() => onNavigate('inventory')}
-            className="px-2.5 py-1 rounded-md bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-semibold shrink-0 transition-colors"
+            className="px-2.5 py-1 rounded-md bg-white dark:bg-slate-800 border border-amber-300 dark:border-amber-700/60 hover:bg-amber-50 text-amber-800 dark:text-amber-200 text-[11px] font-semibold transition-colors shrink-0"
           >
             Review Inventory
           </button>

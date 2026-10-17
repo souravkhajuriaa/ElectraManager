@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from '@/src/contexts/ThemeContext';
 import { AuthProvider, useAuth } from '@/src/contexts/AuthContext';
 import { DataProvider, useData } from '@/src/contexts/DataContext';
+import { ChatProvider } from '@/src/contexts/ChatContext';
 import { NavigationTab, Product } from '@/src/types';
 
 // Layout
@@ -9,6 +10,9 @@ import { Sidebar } from '@/src/components/layout/Sidebar';
 import { AdminSidebar } from '@/src/components/layout/AdminSidebar';
 import { Navbar } from '@/src/components/layout/Navbar';
 import { MobileNav } from '@/src/components/layout/MobileNav';
+
+// AI Chatbot
+import { AIChatBot } from '@/src/components/chat/AIChatBot';
 
 // Views
 import { AuthView } from '@/src/components/auth/AuthView';
@@ -171,6 +175,12 @@ const MainAppContent: React.FC = () => {
           onClose={closeUserLoginModal}
         />
 
+        {/* AI Chatbot Copilot */}
+        <AIChatBot
+          onNavigate={handleNavigate}
+          onRecordSaleForProduct={handleRecordSaleForProduct}
+        />
+
         {/* Bottom Mobile Tab Bar */}
         <MobileNav
           currentTab={currentTab}
@@ -187,7 +197,9 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <DataProvider>
-          <MainAppContent />
+          <ChatProvider>
+            <MainAppContent />
+          </ChatProvider>
         </DataProvider>
       </AuthProvider>
     </ThemeProvider>

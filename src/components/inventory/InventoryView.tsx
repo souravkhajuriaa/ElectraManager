@@ -10,8 +10,10 @@ import {
   ArrowUpDown,
   Filter,
   Package,
+  Bot,
 } from 'lucide-react';
 import { useData } from '@/src/contexts/DataContext';
+import { useAIChat } from '@/src/contexts/ChatContext';
 import { Product, NavigationTab } from '@/src/types';
 import { StockBadge } from '@/src/components/ui/Badge';
 import { Modal } from '@/src/components/ui/Modal';
@@ -35,6 +37,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
     outOfStockCount,
     totalInventoryValue,
   } = useData();
+  const { openChatWithPrompt } = useAIChat();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
@@ -191,6 +194,16 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
             <option value="low_stock">Low Stock Alerts</option>
             <option value="out_of_stock">Out of Stock</option>
           </select>
+
+          <button
+            type="button"
+            onClick={() => openChatWithPrompt('Which items are low in stock, out of stock, or marked as damaged or returned in audit logs?')}
+            className="h-8 px-2.5 rounded-md bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 border border-indigo-200/80 dark:border-indigo-800/80 text-indigo-700 dark:text-indigo-300 text-xs font-semibold flex items-center gap-1.5 transition-colors shrink-0 shadow-2xs"
+            title="Audit stock and damaged items with ElectraBot AI"
+          >
+            <Bot className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+            <span className="hidden sm:inline">AI Stock Audit</span>
+          </button>
         </div>
       </div>
 

@@ -12,9 +12,11 @@ import {
   Sparkles,
   Download,
   IndianRupee,
+  Bot,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useData } from '@/src/contexts/DataContext';
+import { useAIChat } from '@/src/contexts/ChatContext';
 import { Product, Sale, NavigationTab } from '@/src/types';
 import { Modal } from '@/src/components/ui/Modal';
 import { formatINR, formatDateTime, formatCompactINR } from '@/src/lib/utils/currency';
@@ -29,6 +31,7 @@ export const SalesView: React.FC<SalesViewProps> = ({
   preselectedProduct,
 }) => {
   const { products, sales, recordSale, business } = useData();
+  const { openChatWithPrompt } = useAIChat();
 
   // Sale form states
   const [selectedProductId, setSelectedProductId] = useState<string>(
@@ -361,15 +364,26 @@ export const SalesView: React.FC<SalesViewProps> = ({
             </p>
           </div>
 
-          <div className="relative w-full sm:w-64">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search product, customer..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-            />
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="relative w-full sm:w-64">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search product, customer..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => openChatWithPrompt('Show recent customer billing details, customer names, and payment records.')}
+              className="px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 text-xs font-semibold flex items-center gap-1.5 shrink-0 shadow-2xs transition-colors"
+              title="Search customer bills with ElectraBot AI"
+            >
+              <Bot className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+              <span className="hidden sm:inline">AI Bill Query</span>
+            </button>
           </div>
         </div>
 

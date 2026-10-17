@@ -1,0 +1,56 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Products collection: supports reading, creating, editing titles, stock, images, etc.
+    match /products/{productId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn() || request.auth == null;
+    }
+
+    // Categories
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn() || request.auth == null;
+    }
+
+    // Sales transactions
+    match /sales/{saleId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn() || request.auth == null;
+    }
+
+    // Businesses
+    match /businesses/{businessId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn() || request.auth == null;
+    }
+
+    // Notifications
+    match /notifications/{notificationId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn() || request.auth == null;
+    }
+
+    // Activity logs
+    match /activityLogs/{logId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn() || request.auth == null;
+    }
+
+    // Default deny for all other documents
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

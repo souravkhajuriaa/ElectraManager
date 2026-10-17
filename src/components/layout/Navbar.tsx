@@ -38,7 +38,13 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const { theme, toggleTheme } = useTheme();
   const { user, isAdmin, switchRole, logout, openAdminLoginModal } = useAuth();
-  const { notifications, unreadNotificationCount, markNotificationAsRead, markAllNotificationsRead, products } = useData();
+  const {
+    notifications,
+    unreadNotificationCount,
+    markNotificationAsRead,
+    markAllNotificationsRead,
+    products,
+  } = useData();
 
   const handleSelectTab = (tab: NavigationTab) => {
     if (onSelectTab) onSelectTab(tab);

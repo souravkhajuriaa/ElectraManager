@@ -1,0 +1,141 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Electronics product item with pricing, inventory count, and image details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "businessId": { "type": "string", "maxLength": 128 },
+        "categoryId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 200 },
+        "brand": { "type": "string", "maxLength": 100 },
+        "modelNumber": { "type": "string", "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 1000 },
+        "sku": { "type": "string", "maxLength": 100 },
+        "purchasePrice": { "type": "number" },
+        "sellingPrice": { "type": "number" },
+        "stockQuantity": { "type": "number" },
+        "minStockLevel": { "type": "number" },
+        "imageUrl": { "type": "string", "maxLength": 250000 },
+        "status": { "type": "string", "enum": ["active", "inactive", "discontinued"] },
+        "createdAt": { "type": "string", "maxLength": 50 },
+        "updatedAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "name", "sellingPrice", "stockQuantity"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Product classification category",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "businessId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 100 },
+        "icon": { "type": "string", "maxLength": 50 },
+        "color": { "type": "string", "maxLength": 50 },
+        "description": { "type": "string", "maxLength": 500 }
+      },
+      "required": ["id", "name"]
+    },
+    "Sale": {
+      "title": "Sale",
+      "description": "Completed point of sale invoice transaction record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "businessId": { "type": "string", "maxLength": 128 },
+        "productId": { "type": "string", "maxLength": 128 },
+        "productName": { "type": "string", "maxLength": 200 },
+        "categoryId": { "type": "string", "maxLength": 128 },
+        "quantity": { "type": "number" },
+        "unitPrice": { "type": "number" },
+        "purchasePrice": { "type": "number" },
+        "totalAmount": { "type": "number" },
+        "profit": { "type": "number" },
+        "customerName": { "type": "string", "maxLength": 100 },
+        "customerPhone": { "type": "string", "maxLength": 50 },
+        "notes": { "type": "string", "maxLength": 500 },
+        "saleDate": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "productId", "quantity", "totalAmount"]
+    },
+    "Business": {
+      "title": "Business",
+      "description": "Store configuration and business profile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 150 },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "logoUrl": { "type": "string", "maxLength": 1000 },
+        "address": { "type": "string", "maxLength": 300 },
+        "phone": { "type": "string", "maxLength": 50 },
+        "email": { "type": "string", "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 500 },
+        "gstNumber": { "type": "string", "maxLength": 50 },
+        "createdAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "name"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "System event notification or inventory alert",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "businessId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 150 },
+        "message": { "type": "string", "maxLength": 500 },
+        "type": { "type": "string", "maxLength": 50 },
+        "isRead": { "type": "boolean" },
+        "createdAt": { "type": "string", "maxLength": 50 },
+        "productId": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["id", "title", "message"]
+    },
+    "ActivityLog": {
+      "title": "ActivityLog",
+      "description": "Audit trail log of store actions and modifications",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "userName": { "type": "string", "maxLength": 100 },
+        "businessId": { "type": "string", "maxLength": 128 },
+        "action": { "type": "string", "maxLength": 150 },
+        "entityType": { "type": "string", "maxLength": 50 },
+        "entityId": { "type": "string", "maxLength": 128 },
+        "details": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "action", "details"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "All retail inventory products catalog, editable in real time with durable cloud persistence"
+    },
+    "/categories/{categoryId}": {
+      "schema": "Category",
+      "description": "Product categories defined for inventory grouping"
+    },
+    "/sales/{saleId}": {
+      "schema": "Sale",
+      "description": "Recorded customer sales orders and revenue transactions"
+    },
+    "/businesses/{businessId}": {
+      "schema": "Business",
+      "description": "Store profile, contact information, and business identity"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "Inventory alerts and system notifications"
+    },
+    "/activityLogs/{logId}": {
+      "schema": "ActivityLog",
+      "description": "Audit trail for store operations"
+    }
+  }
+}
